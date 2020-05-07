@@ -1,37 +1,55 @@
 import React, { useState, useEffect } from "react";
+import CocktailList from "../components/CocktailList";
+import SearchForm from "../components/SearchForm";
 
 const cocktailsArray = [];
 
 export default function Home() {
   const [cocktails, setCocktails] = useState(cocktailsArray);
-
-  // useEffect(() => {
-  //   fetch("https://www.thecocktaildb.com/api/json/v1/1/search.php?s=a")
-  //     .then((resp) => resp.json())
-  //     .then((drinks) => {
-  //       const newDrinks = drinks.drinks.map((drink) => {
-  //         const { strDrink, strIngredient1 } = drink;
-  //         return { name: strDrink, indredients: strIngredient1 };
-  //       });
-  //       setCocktails(newDrinks);
-  //     });
-  //   return () => {};
-  // }, [cocktails]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerms, setSearchTerms] = useState("a");
 
   useEffect(() => {
-    async function getCocktails() {
-      const res = await fetch(
-        "https://www.thecocktaildb.com/api/json/v1/1/search.php?s=a"
-      );
-      const drinks = await res.json();
-      const newDrinks = drinks.drinks.map((drink) => {
-        const { strDrink, strIngredient1 } = drink;
-        return { name: strDrink, indredients: strIngredient1 };
-      });
-      await setCocktails(newDrinks);
-    }
+    const getCocktails = async () => {
+      try {
+        const res = await fetch(
+          `https://www.thecocktaildb.com/api/json/v1/1/search.php?s=${searchTerms}`
+        );
+        const { drinks } = await res.json();
+        if (drinks) {
+          const newDrinks = drinks.map((drink) => {
+            const {
+              idDrink,
+              strDrink,
+              strDrinkThumb,
+              strAlcoholic,
+              strGlass,
+            } = drink;
+            return {
+              id: idDrink,
+              name: strDrink,
+              image: strDrinkThumb,
+              info: strAlcoholic,
+              glass: strGlass,
+            };
+          });
+          setCocktails(newDrinks);
+        } else {
+          setCocktails([]);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+      await setLoading(false);
+    };
     getCocktails();
-  }, [cocktails]);
+  }, [searchTerms]);
 
-  return <h1>error page</h1>;
+  return (
+    <>
+      <SearchForm setSearchTerms={setSearchTerms} />
+
+      <CocktailList loading={loading} drinks={cocktails} />
+    </>
+  );
 }

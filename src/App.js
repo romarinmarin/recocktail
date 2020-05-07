@@ -9,7 +9,6 @@ import Navbar from "./components/Navbar";
 export default function App() {
   return (
     <>
-      <h1>app component</h1>
       <Router>
         <Navbar />
         <Switch>
